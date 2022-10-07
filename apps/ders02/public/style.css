@@ -8,7 +8,7 @@
 .main-content {
     display: flex;
     flex-direction: column;
-    min-width: 50%; /* Burayi hemen yazma asagidakileri yazdiktan sonra tanimla*/
+    min-width: 50%; 
     align-items: center;
 }
 .heading {
