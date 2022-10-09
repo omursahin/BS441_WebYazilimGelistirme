@@ -1,3 +1,5 @@
+const decode = require('unescape');
+
 export const quizzes = [
     {
         question: "JavaScript hangi tipte dildir?",
@@ -91,25 +93,82 @@ export const quizzes = [
 ];
 
 
-export const getRandomQuizzes = (numberOfQuizzes) => {
+export const getRandomQuizzes = async (numberOfQuizzes) => {
     if(numberOfQuizzes < 1 ){
         throw "Geçersiz quiz sayısı: "+numberOfQuizzes;
     }
     if(numberOfQuizzes > quizzes.length){
         throw "Çok sayıda quiz";
     }
+    const url = "https://opentdb.com/api.php?type=multiple&amount=" + numberOfQuizzes;
+    let response;
+    let payload;
 
-    const selection = Array(numberOfQuizzes);
-
-    let i = 0;
-    while(i < numberOfQuizzes) {
-        const k = Math.floor(quizzes.length*Math.random());
-        if(selection.includes(k)){
-            continue;
-        }
-        selection[i] = k;
-        i++;
+    try{
+        response = await fetch(url);
+        payload = await response.json();
+    }catch (err) {
+        return null;
     }
-    return Array.from(selection).map(e => quizzes[e]);
 
+    if(response.status !== 200) {
+        return null;
+    }
+    /*
+    * {
+   "response_code":0,
+   "results":[
+      {
+         "category":"Entertainment: Television",
+         "type":"multiple",
+         "difficulty":"medium",
+         "question":"What year did the television company BBC officially launch the channel BBC One?",
+         "correct_answer":"1936",
+         "incorrect_answers":[
+            "1948",
+            "1932",
+            "1955"
+         ]
+      },
+      {
+         "category":"History",
+         "type":"multiple",
+         "difficulty":"hard",
+         "question":"What year was Canada founded in?",
+         "correct_answer":"1867",
+         "incorrect_answers":[
+            "1798",
+            "1859",
+            "1668"
+         ]
+      },
+      {
+         "category":"Entertainment: Video Games",
+         "type":"multiple",
+         "difficulty":"medium",
+         "question":"What is the mod &quot;Cry of Fear&quot; based off of?",
+         "correct_answer":"Half-Life",
+         "incorrect_answers":[
+            "Counter Strike: Source",
+            "Half-Life 2",
+            "It&#039;s a stand alone game, not a mod"
+         ]
+      }
+   ]
+}
+    * */
+    return payload.results.map(q=>{
+        const correct = Math.floor(Math.random() * 3);
+        const answers = q.incorrect_answers.map(e=>decode(e));
+        answers.splice(correct,0,decode(q.correct_answer));
+        console.log(q.correct_answer)
+
+        return {
+            question: decode(q.question),
+            answers: answers,
+            indexOfRightAnswer: correct,
+            id: 0
+        }
+
+    });
 }
